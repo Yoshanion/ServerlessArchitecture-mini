@@ -1,0 +1,39 @@
+name: Deploy Serverless Application
+
+on: 
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up Python
+              uses: actions/setup-python@v2
+              with:
+                python-version: '3.8'
+            
+            - name: Install dependencies
+              run : |
+                pip install boto3
+
+            - name: Package Lambda function
+              run: |
+                cd lambda
+                zip function.zip lambda_function.py
+          
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v1
+          
+            - name: Terraform Init and Apply
+              run: |
+                cd terraform
+                terraform init
+                terraform plan
+            # change plan to > apply --auto-approve
+            - name: Cleanup Artifacts
+              run: |
+                rm lambda/function.zip
